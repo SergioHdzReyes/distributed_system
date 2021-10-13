@@ -1,17 +1,10 @@
 //
-// Created by sergio on 09/10/21.
+// Created by sergio on 10/10/21.
 //
 
-#include <sys/socket.h>
-#include <unistd.h>
-#include <string.h>
-#include <netinet/in.h>
-#include <stdio.h>
+#include "receive.h"
 
-#define SERVER_PORT 50000
-#define MAX_CHAR 256
-
-int main() {
+void receive_conexions(int MAX_CHAR, int CUR_PORT_REC) {
     int tcp_sock;
     char *buffer = "Respuesta desde servidor";
     char line[MAX_CHAR];
@@ -20,17 +13,17 @@ int main() {
     // Se crea descriptor de archivo para socket
     if ((tcp_sock = socket(AF_INET, SOCK_STREAM, 0)) < 0) {
         perror("Ocurrio un error al crear socket");
-        return 1;
+        exit(0);
     }
 
     server_addr.sin_family = AF_INET;
     server_addr.sin_addr.s_addr = htonl(INADDR_ANY);
-    server_addr.sin_port = htons(SERVER_PORT);
+    server_addr.sin_port = htons(CUR_PORT_REC);
 
     // Se enlaza socket con direccion y puerto
     if (bind(tcp_sock, (struct sockaddr*) &server_addr, sizeof(server_addr)) < 0) {
         perror("Ocurrio un eror en bind( )");
-        return 1;
+        exit(0);
     }
 
     // Se prepara para escuchar conexiones
@@ -48,7 +41,7 @@ int main() {
 
         if (con_sock < 0) {
             perror("Ocurrio un error al aceptar comunicacion");
-            return 1;
+            exit(0);
         }
 
         while (1) {
@@ -62,6 +55,7 @@ int main() {
             }
 
             printf("servidor: n=%ld bytes leidos; line=%s\n", n, line);
+            //printf("Recibido: %s\n", line);
 
             // Se manda respuesta de servidor
             n = write(con_sock, buffer, len_buffer);
@@ -71,6 +65,4 @@ int main() {
             }
         }
     }
-
-    return 0;
 }

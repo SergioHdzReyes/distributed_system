@@ -1,36 +1,35 @@
 //
-// Created by sergio on 10/10/21.
+// Created by sergio on 09/10/21.
 //
 
-#include <sys/socket.h>
-#include <stdio.h>
-#include <netinet/in.h>
-#include <string.h>
-#include <unistd.h>
-#include <stdlib.h>
+#include "send.h"
 
-int main() {
+void send_conexions(int MAX, int CUR_PORT_REC, int BASE_PORT) {
     int tcp_sock, r;
     struct sockaddr_in server_addr;
-    int SERVER_PORT = 50000;
-    int bytes;
-    int MAX = 256;
+    int bytes, port;
     char line[MAX], ans[MAX];
 
     // Se crea descriptor de archivo para socket
     if ((tcp_sock = socket(AF_INET, SOCK_STREAM, 0)) < 0) {
         perror("Ocurrio un error al crear el socket");
-        return 1;
+        exit(0);
     }
 
     server_addr.sin_family = AF_INET;
     server_addr.sin_addr.s_addr = htonl(INADDR_ANY);
-    server_addr.sin_port = htons(SERVER_PORT);
+
+    if (CUR_PORT_REC > BASE_PORT) { // Se esta ejecutando segunda aplicacion
+        port = BASE_PORT;
+    } else { // Se esta ejecutando la primera aplicacion
+        port = CUR_PORT_REC+1;
+    }
+    server_addr.sin_port = htons(port);
 
     // Se intenta conectar a servidor
     if (connect(tcp_sock, (struct sockaddr*) &server_addr, sizeof(server_addr)) < 0) {
         perror("Ocurrio un error al conectar");
-        return 1;
+        exit(0);
     }
     printf("Conectado al servidor\n");
 
@@ -52,6 +51,4 @@ int main() {
         bytes = read(tcp_sock, ans, MAX);
         printf("cliente: leido n=%d; dato=%s\n", bytes, ans);
     }
-
-    return 0;
 }
