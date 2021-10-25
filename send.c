@@ -25,6 +25,7 @@ void send_conexions(int MAX, int CUR_PORT_REC, int BASE_PORT) {
         port = CUR_PORT_REC+1;
     }
     server_addr.sin_port = htons(port);
+    printf("[send_conexions] PUERTO: %d\n", port);
 
     // Se intenta conectar a servidor
     if (connect(tcp_sock, (struct sockaddr*) &server_addr, sizeof(server_addr)) < 0) {
@@ -36,19 +37,19 @@ void send_conexions(int MAX, int CUR_PORT_REC, int BASE_PORT) {
     while (1) {
         bzero(line, MAX);
 
-        printf("Enviar mensaje: ");
+        printf("2-Enviar mensaje: ");
         fgets(line, MAX, stdin);
         line[strlen(line)-1] = 0; // kill \n at end
 
-        if (line[0]==0) // exit if NULL line
-            exit(0);
+        /*if (line[0]==0) // exit if NULL line
+            exit(0);*/
 
         // Se manda mensaje a servidor
         bytes = write(tcp_sock, line, MAX);
-        printf("cliente: escrito n=%d; line=%s\n", bytes, line);
+        //printf("cliente: escrito n=%d; line=%s\n", bytes, line);
 
         // Se recibe respuesta de servidor
-        bytes = read(tcp_sock, ans, MAX);
-        printf("cliente: leido n=%d; dato=%s\n", bytes, ans);
+        //bytes = read(tcp_sock, ans, MAX);
+        //printf("cliente: leido n=%d; dato=%s\n", bytes, ans);
     }
 }

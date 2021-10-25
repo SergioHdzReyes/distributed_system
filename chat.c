@@ -3,6 +3,7 @@
 //
 
 #include <unistd.h>
+#include <sys/shm.h>
 #include "receive.h"
 #include "send.h"
 
@@ -16,24 +17,43 @@ int CUR_PORT_REC = 3000;
 int search_app();
 
 int main() {
+    int *data_received = 0;
+    int client_running = 0;
+
+    // ftok to generate unique key
+    key_t key = ftok("shrchat",1990);
+    // shmget returns an identifier in shmid
+    int shmid = shmget(key,sizeof(int),0666|IPC_CREAT);
+    // shmat to attach to shared memory
+    int *con_rec = shmat(shmid,(int*)0,0);
+    *con_rec = 0;
 
     if (search_app()) { // Ya hay aplicaciones corriendo
         if ( fork()==0 ) {
-            send_conexions(MAX_CHAR, CUR_PORT_REC, BASE_PORT);
+            printf("Nuevo fork, [receive_conexions]\n");
+            receive_conexions(MAX_CHAR, CUR_PORT_REC, &data_received); // Servidor
         }
-        /*if ( fork()==0 ) {
-            receive_conexions(MAX_CHAR, CUR_PORT_REC);
-            //printf("Termina procesar peticion\n");
-            //exit(0);
-        }*/
+        if ( fork()==0 ) {
+            printf("Nuevo fork, [send_conexions]\n");
+            send_conexions(MAX_CHAR, CUR_PORT_REC, BASE_PORT); // Cliente
+        }
+        client_running = 1;
     } else {
         if ( fork()==0 ) {
-            receive_conexions(MAX_CHAR, CUR_PORT_REC);
+            printf("Nuevo fork, [receive_conexions]\n");
+            receive_conexions(MAX_CHAR, CUR_PORT_REC, &data_received); // Servidor
         }
     }
 
     while (1) {
-
+        //printf("VALOR: %d", *con_rec);
+        if (!client_running && (*con_rec == 1)) {
+            if ( fork()==0 ) {
+                printf("Nuevo fork, [send_conexions]\n");
+                send_conexions(MAX_CHAR, CUR_PORT_REC, BASE_PORT); // Cliente
+            }
+            client_running = 1;
+        }
     }
 
     return 0;
@@ -62,6 +82,7 @@ int search_app() {
 
         // Se intenta conectar a servidor
         if (connect(tcp_sock, (struct sockaddr*) &server_addr, sizeof(server_addr)) < 0) {
+            printf("[search_app] Puerto disponible: %d\n", CUR_PORT_REC);
             // Se cierra Socket
             shutdown (tcp_sock, SHUT_RDWR);
             close(tcp_sock);
@@ -76,4 +97,8 @@ int search_app() {
 
     printf("Se ha excedido el numero de conexiones disponibles(10)\nSaliendo...\n");
     exit(0);
+}
+
+void signal_data_received() {
+
 }

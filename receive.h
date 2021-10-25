@@ -12,6 +12,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-void receive_conexions(int, int);
+void receive_conexions(int, int, int**);
 
 #endif //DISTRIBUTED_SYSTEM_RECEIVE_H
