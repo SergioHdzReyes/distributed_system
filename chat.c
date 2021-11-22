@@ -2,8 +2,11 @@
 // Created by sergio on 09/10/21.
 //
 
+#include <ncurses.h>
 #include <unistd.h>
 #include <sys/shm.h>
+
+#include "gui_tools.h"
 #include "receive.h"
 #include "send.h"
 
@@ -28,41 +31,49 @@ int main() {
     int *con_rec = shmat(shmid,(int*)0,0);
     *con_rec = 0;
 
+    //draw_windows();
+    //getch();
+    initscr();
+
     if (search_app()) { // Ya hay aplicaciones corriendo
         if ( fork()==0 ) {
-            printf("Nuevo fork, [receive_conexions]\n");
+            printw("Nuevo fork, [receive_conexions]\n");
             receive_conexions(MAX_CHAR, CUR_PORT_REC, &data_received); // Servidor
         }
         if ( fork()==0 ) {
-            printf("Nuevo fork, [send_conexions]\n");
+            printw("Nuevo fork, [send_conexions]\n");
             send_conexions(MAX_CHAR, CUR_PORT_REC, BASE_PORT); // Cliente
         }
         client_running = 1;
     } else {
         if ( fork()==0 ) {
-            printf("Nuevo fork, [receive_conexions]\n");
+            printw("Nuevo fork, [receive_conexions]\n");
             receive_conexions(MAX_CHAR, CUR_PORT_REC, &data_received); // Servidor
         }
+        //wait_conexions();
     }
+    refresh();
 
     while (1) {
         //printf("VALOR: %d", *con_rec);
         if (!client_running && (*con_rec == 1)) {
             if ( fork()==0 ) {
-                printf("Nuevo fork, [send_conexions]\n");
+                printw("Nuevo fork, [send_conexions]\n");
                 send_conexions(MAX_CHAR, CUR_PORT_REC, BASE_PORT); // Cliente
             }
             client_running = 1;
+            draw_windows();
         }
     }
 
+    endwin();
     return 0;
 }
 
 // 1 -> aplicacion corriendo
 // 0 -> no hay aplicaciones
 int search_app() {
-    printf("Se comienza a buscar chat disponible...\n");
+    printw("Se comienza a buscar chat disponible...\n");
 
     int tcp_sock;
     struct sockaddr_in server_addr;
@@ -82,7 +93,7 @@ int search_app() {
 
         // Se intenta conectar a servidor
         if (connect(tcp_sock, (struct sockaddr*) &server_addr, sizeof(server_addr)) < 0) {
-            printf("[search_app] Puerto disponible: %d\n", CUR_PORT_REC);
+            printw("[search_app] Puerto disponible: %d\n", CUR_PORT_REC);
             // Se cierra Socket
             shutdown (tcp_sock, SHUT_RDWR);
             close(tcp_sock);
@@ -95,7 +106,7 @@ int search_app() {
         aux += 1; // Mantiene cantidad de aplicaciones escaneadas
     }
 
-    printf("Se ha excedido el numero de conexiones disponibles(10)\nSaliendo...\n");
+    printw("Se ha excedido el numero de conexiones disponibles(10)\nSaliendo...\n");
     exit(0);
 }
 

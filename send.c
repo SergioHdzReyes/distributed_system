@@ -2,6 +2,7 @@
 // Created by sergio on 09/10/21.
 //
 
+#include "gui_tools.h"
 #include "send.h"
 
 void send_conexions(int MAX, int CUR_PORT_REC, int BASE_PORT) {
@@ -25,19 +26,20 @@ void send_conexions(int MAX, int CUR_PORT_REC, int BASE_PORT) {
         port = CUR_PORT_REC+1;
     }
     server_addr.sin_port = htons(port);
-    printf("[send_conexions] PUERTO: %d\n", port);
+    printw("[send_conexions] PUERTO: %d\n", port);
 
     // Se intenta conectar a servidor
     if (connect(tcp_sock, (struct sockaddr*) &server_addr, sizeof(server_addr)) < 0) {
-        perror("Ocurrio un error al conectar");
+        //perror("Ocurrio un error al conectar");
+        printw("Ocurrio un error al conectar");
         exit(0);
     }
-    printf("Conectado al servidor\n");
+    printw("Conectado al servidor\n");
 
     while (1) {
         bzero(line, MAX);
 
-        printf("2-Enviar mensaje: ");
+        printw("2-Enviar mensaje: ");
         fgets(line, MAX, stdin);
         line[strlen(line)-1] = 0; // kill \n at end
 

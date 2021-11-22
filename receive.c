@@ -4,6 +4,7 @@
 
 #include <signal.h>
 #include <sys/shm.h>
+#include "gui_tools.h"
 #include "receive.h"
 
 void receive_conexions(int MAX_CHAR, int CUR_PORT_REC, int **data_received) {
@@ -26,11 +27,12 @@ void receive_conexions(int MAX_CHAR, int CUR_PORT_REC, int **data_received) {
     server_addr.sin_family = AF_INET;
     server_addr.sin_addr.s_addr = htonl(INADDR_ANY);
     server_addr.sin_port = htons(CUR_PORT_REC);
-    printf("[receive_conexions] PUERTO: %d\n", CUR_PORT_REC);
+    printw("[receive_conexions] PUERTO: %d\n", CUR_PORT_REC);
 
     // Se enlaza socket con direccion y puerto
     if (bind(tcp_sock, (struct sockaddr*) &server_addr, sizeof(server_addr)) < 0) {
-        perror("Ocurrio un eror en bind( )");
+        //perror("Ocurrio un eror en bind( )");
+        printw("Ocurrio un error en bind( )");
         exit(0);
     }
 
@@ -61,7 +63,8 @@ void receive_conexions(int MAX_CHAR, int CUR_PORT_REC, int **data_received) {
             // Se recibe informacion desde socket, limitado a MAX_CHAR bytes
             n = read(con_sock, line, MAX_CHAR);
             if (n != 0) {
-                printf("1-Recibido: %s\n", line);
+                //printf("1-Recibido: %s\n", line);
+                rec_msg(line);
             }
 
             /*if (n == 0){
